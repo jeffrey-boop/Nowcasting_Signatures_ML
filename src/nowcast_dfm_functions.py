@@ -142,7 +142,7 @@ def format_for_dfm(input_df, start_date):
     return endog_m_nyfed, endog_q_nyfed
 
 
-def gen_horizon_intervals(start_val=0, repeats=7, step=52):
+def gen_horizon_intervals(start_val=0, repeats=52, step=7):
     """
     Generates an array detailing weeks to number of days in the year
 
