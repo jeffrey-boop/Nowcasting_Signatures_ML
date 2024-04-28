@@ -9,6 +9,7 @@ from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn import preprocessing
 from pathlib import Path
 import compute_linear_sigs as sig_funcs
+import xgboost as xgb
 
 def reduce_dim(df, k, factor_structure=None, fill_method='backfill'):
     '''
@@ -325,7 +326,22 @@ def regress(observation_train, target_train, observation_test, target_test,
         observation_test = pd.DataFrame(scaler.transform(observation_test),
                                         index=observation_test.index)
     max_iter = 1000
-    if model_params['regularize'] == 'l2' and model_params['alpha'] != 0.0:
+    if model_params['regularize'] == 'xgb':
+        # Define and configure the XGBoost model
+        reg = xgb.XGBRegressor(
+            n_estimators=model_params['n_estimators'],
+            learning_rate=model_params['learning_rate'],
+            max_depth=model_params['max_depth'],
+            subsample=model_params['subsample'],
+            colsample_bytree=model_params['colsample_bytree'],
+            objective='reg:squarederror',  # For regression tasks
+            random_state=42
+        )
+        # Fit the model
+        reg.fit(observation_train, target_train, eval_metric='rmse', verbose=False,
+                eval_set=[(observation_train, target_train), (observation_test, target_test)],
+                early_stopping_rounds=0.1*model_params['n_estimators'])  # Stop if no improvement after 10 rounds
+    elif model_params['regularize'] == 'l2' and model_params['alpha'] != 0.0:
         reg = Ridge(alpha=model_params['alpha'],
                     fit_intercept=model_params['fit_intercept'],
                     max_iter=max_iter).fit(observation_train, target_train)
@@ -359,8 +375,9 @@ def regress(observation_train, target_train, observation_test, target_test,
         print(f"saving models to {save_dir}")
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
-        filename = f'{save_dir}/signature_model.pkl'
-        pickle.dump(reg, open(filename, 'wb'))
+        if model_params['regularize'] != 'xgb': # Save if not XGBoost
+            filename = f'{save_dir}/signature_model.pkl'
+            pickle.dump(reg, open(filename, 'wb'))
         
         if model_params['standardize']:
             pickle.dump(scaler, open(f'{save_dir}/scaler.pkl', 'wb'))
