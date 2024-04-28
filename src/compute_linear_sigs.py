@@ -512,10 +512,11 @@ def compute_sigs_dates(df, configs, df_target=None):
 
     all_sigs = []
 
-    if not configs['t_level']:
-        t_level = configs['level']
-    else:
-        t_level = configs['t_level']
+    t_level = configs['level']
+    # if not configs['t_level']:
+    #     t_level = configs['level']
+    # else:
+    #     t_level = configs['t_level']
 
     dim = len(df.columns)
 

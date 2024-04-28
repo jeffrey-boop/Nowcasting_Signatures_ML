@@ -16,7 +16,7 @@ window_type: days
 fill_method: [rectilinear, ffill]
 level: [3, 4]
 keep_sigs: all
-t_level: [2, 3]
+t_level:
 l1_ratio: [0.0, 0.5, 1.0]
 use_multiplier: True
 fit_intercept: True
