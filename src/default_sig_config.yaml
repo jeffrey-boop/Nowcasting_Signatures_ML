@@ -14,12 +14,17 @@ alpha: 2.0
 max_length: 730
 window_type: days
 fill_method: ffill
-level: [3, 4]
+level: [2, 3, 4]
 keep_sigs: all
 t_level:
 l1_ratio: 0.0
 use_multiplier: True
 fit_intercept: True
-use_quarter_time: True
-use_prev_value: True
+use_quarter_time: [True, False]
+use_prev_value: [True, False]
 basepoint: False
+n_estimators: [100, 200, 500]
+learning_rate: [0.05, 0.1, 0.2]
+max_depth: [5, 7, 9]
+subsample: [0.6, 0.8, 1]
+colsample_bytree: [0.6, 0.8, 1]
