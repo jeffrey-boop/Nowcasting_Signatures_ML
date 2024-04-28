@@ -11,14 +11,14 @@ from dfm_extract import generate_dfm
 def prepare_gdp_labels(input_dir):
 
     '''
-    Prepare the prediction labels from nyfed_data.csv
+    Prepare the prediction labels from merged_data.csv
     
     Parameters  input_dir: path where the data is stored
     
     Returns     df_gdp: dataframe of data
     '''
     
-    df_gdp = pd.read_csv(f'{str(input_dir)}/nyfed_data.csv', 
+    df_gdp = pd.read_csv(f'{str(input_dir)}/merged_data.csv', 
                          usecols=['DATE', 'GDPC1'])
     df_gdp = df_gdp.join(df_gdp[~df_gdp['GDPC1'].isnull()]\
                          ['GDPC1'].shift().rename('GDPC1_prev1'))
@@ -167,8 +167,8 @@ def gather_predictions(results_dir):
     Returns     df_results: dataframe of nowcast results
     '''
 
-    p = (results_dir/'predictions').glob('**/*')
-    directories = [x for x in p if x.is_dir()]
+    p = results_dir/'predictions'
+    directories = [x for x in p.iterdir() if x.is_dir()]
     directories.sort()
 
     results_list = []
@@ -236,7 +236,7 @@ def find_files(path_names, end_date=None):
     Returns     files: list of paths of files to use for nowcasting
     '''
     
-    files = [x for x in path_names if x.is_file()]
+    files = [x for x in path_names if x.is_file() and x.name != '.DS_Store']
         
     if end_date:
         end_date = pd.to_datetime(end_date, format="%Y-%m-%d")
@@ -497,12 +497,12 @@ if __name__ == '__main__':
         print('Generating DFM results and factors')
         
         data_config = {
-            'data_file': 'nyfed_data.csv',
+            'data_file': 'merged_data.csv',
             'meta_file': 'nyfed_metadata.csv',
             'pub_lag_info': 'nyfed_indicators.csv',
-            'ref_date': '2000-01-01',
-            'start_date': '2016-01-01', 
-            'end_date': '2019-12-31',
+            'ref_date': '1990-01-01',
+            'start_date': '2010-01-01', 
+            'end_date': '2024-01-31',
             'global_order': 1,
             'global_multiplicity': 1
             }
@@ -522,4 +522,4 @@ if __name__ == '__main__':
 
             best_configs = get_best_configs(results_root, configs)
             rerun_with_configs(input_dir, results_root, best_configs, 
-                               new_end_date = '2019-12-31')
+                               new_end_date = '2024-01-31')
