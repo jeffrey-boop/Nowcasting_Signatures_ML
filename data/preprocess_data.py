@@ -48,6 +48,6 @@ for col in [c for c in all_data_merged.columns if c != 'DATE']:
 all_data_merged['UMCSENT'] = all_data_merged['UMCSENT'].replace({0: np.nan})
 
 # Export to a new Excel file
-save_dir = current_dir.parent / 'merged_data.csv'
+save_dir = current_dir / 'merged_data.csv'
 all_data_merged.to_csv(save_dir, index=False)
 

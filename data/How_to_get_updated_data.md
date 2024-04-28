@@ -8,4 +8,4 @@
 
 4. Run "preprocess_data.py" to preprocess the data.
 
-5. You should get a file named "merged_data.csv" in the parent/root folder (not the "data" folder), which is the preprocessed input data.
+5. You should get a file named "merged_data.csv" in the "data" folder. This is the preprocessed input data for use in this project.
