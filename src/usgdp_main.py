@@ -8,6 +8,9 @@ import compute_linear_sigs as sig_funcs
 import signature_helper_funcs as helper_funcs
 from dfm_extract import generate_dfm
 
+from datetime import datetime, timedelta
+import nowcast_dfm_functions 
+
 def prepare_gdp_labels(input_dir):
 
     '''
@@ -102,13 +105,16 @@ def find_signatures(df_merge, configs):
     observation_filled['t'] = (observation_filled['t']-\
                                observation_filled['t'][0]).dt.days.values
 
-    multiplier_target = df_merge[['DATE', configs['target']]].copy()
-    multiplier_target.rename({'DATE':'t'}, axis=1, inplace=True)
-    multiplier_target.set_index('t', inplace=True)
+    if configs['use_sigs']:
+        multiplier_target = df_merge[['DATE', configs['target']]].copy()
+        multiplier_target.rename({'DATE':'t'}, axis=1, inplace=True)
+        multiplier_target.set_index('t', inplace=True)
 
-    observation_sigs = sig_funcs.compute_sigs_dates(observation_filled, 
-                                                    configs,
-                                                    multiplier_target)
+        observation_sigs = sig_funcs.compute_sigs_dates(observation_filled, 
+                                                        configs,
+                                                        multiplier_target)
+    else:
+        observation_sigs = observation_filled.interpolate(method='ffill')
 
     return observation_sigs
 
@@ -144,7 +150,48 @@ def iteration_on_files(factor_file, df_gdp, config, results_list,
 
     if not config['use_quarter_time']:
         df_merge.drop(['quarter_time'], axis=1, inplace=True)
-    observation_sigs = find_signatures(df_merge, config)
+
+    if config['use_dfm']:
+        observation_sigs = find_signatures(df_merge, config)
+    else:
+        data_root = Path(__file__).resolve().parent.parent/'data'
+        data_config = {
+            'data_file': 'merged_data.csv',
+            'meta_file': 'nyfed_metadata.csv',
+            'pub_lag_info': 'nyfed_indicators.csv',
+            'ref_date': '1990-01-01',
+            'start_date': '2010-01-01', 
+            'end_date': '2024-01-31',
+            'global_order': 1,
+            'global_multiplicity': 1
+            }
+        vars_df, pub_lag_df, vars_dict, vars_meta, factor_blocks_list = \
+        nowcast_dfm_functions.gen_factor_vars(data_root,
+                                          data_config['data_file'],
+                                          data_config['meta_file'], 
+                                          data_config['pub_lag_info'])
+        vars_df_shift = vars_df.shift(1)
+        df_available_at_horizon = pd.DataFrame()
+        horizon = datetime.strptime(data_date, '%Y_%m_%d')
+        ref_date = datetime.strptime(data_config['ref_date'], '%Y-%m-%d')
+        df_available_at_horizon = \
+        nowcast_dfm_functions.gen_data_for_horizons(vars_df_shift, pub_lag_df,
+                                                    ref_date, horizon,
+                                                    df_available_at_horizon)
+
+        # fall back from "current" month to display correct info available
+        # for each month
+        df_available_at_horizon = df_available_at_horizon.shift(-1)
+        
+        # drop columns with missing values for entire period
+        # this only occurs for PPIFIS pre-2010
+        
+        if horizon < datetime.strptime('2010-02-19', '%Y-%m-%d'):
+            df_available_at_horizon = \
+            df_available_at_horizon.drop(['PPIFIS'], axis=1)
+        
+        observation_sigs =  pd.DataFrame(df_available_at_horizon).interpolate()\
+        .fillna(method='backfill')
 
     (results_dir/'predictions'/data_date).mkdir(parents=True,
                                                 exist_ok=True)

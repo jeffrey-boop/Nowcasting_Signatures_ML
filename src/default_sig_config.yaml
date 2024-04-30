@@ -1,5 +1,7 @@
 ---
 experiment_name: final_run
+use_sigs: True # ignored if use_dfm = False
+use_dfm: True
 target: GDPC1
 target_lag: 124
 factor_type: [pca]
