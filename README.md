@@ -1,3 +1,17 @@
+# NOWCASTING MACRO FUNDAMENTALS WITH MACHINE LEARNING
+
+The code is modified based on https://github.com/alan-turing-institute/Nowcasting_with_signatures.git
+
+Building on their work, we have made the following contributions:
+1. Streamlined the process to pull in updated data from the FRED database (https://fred.stlouisfed.org).
+2. Extended the testing and validation period of the original research to a 14-year period (2010-2024).
+3. Added the machine learning model of XGBoost as a prediction step.
+4. Created nowcasting models without the PCA and signature method feature extraction techniques, i.e., XGBoost on raw data.
+
+The README from the original project can be found below:
+---
+
+
 # Nowcasting with signatures
 
 ## Overview
