@@ -1,5 +1,5 @@
 ---
-experiment_name: final_run
+experiment_name: final_run # change "experiment_name" for different models
 use_sigs: True # ignored if use_dfm = False
 use_dfm: True
 target: GDPC1
